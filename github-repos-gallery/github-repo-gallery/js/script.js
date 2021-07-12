@@ -4,15 +4,17 @@ const repoList = document.querySelector(".repo-list");
 const overview = document.querySelector(".overview");
 const usernmame = "sarah-bfleet";
 // section with a class of repos where all your repo info appears 
-const repoSection = document.querySelector(".repos")
+const repoSection = document.querySelector(".repos");
 // section where the individual repo data will appear 
-const singleRepo = document.querySelector(".repo-data")
+const singleRepo = document.querySelector(".repo-data");
+const backBtn = document.querySelector(".view-repos");
+const filterInput = document.querySelector(".filter-repos");
 
 // function to fetch information from Github profile 
 const profileInfo = async function () {
     const res = await fetch(`https://api.github.com/users/${usernmame}`);
     const data = await res.json();
-    
+
     showUserInfo(data);
 };
 
@@ -40,7 +42,7 @@ const showUserInfo = function (data) {
 const getRepos = async function () {
     const response = await fetch(`https://api.github.com/users/${usernmame}/repos?sort=updated&per_page=100`);
     const repoData = await response.json();
-    
+
     displayRepos(repoData);
 };
 
@@ -48,6 +50,7 @@ const getRepos = async function () {
 
 // function to display info about each repo
 const displayRepos = function (repos) {
+    filterInput.classList.remove("hide");
     for (const repo of repos) {
         const repoItem = document.createElement("li");
         repoItem.classList.add("repo");
@@ -60,7 +63,7 @@ repoList.addEventListener("click", function (e) {
     if (e.target.matches("h3")) {
         const repoName = e.target.innerText;
         getRepoInfo(repoName);
-        
+
     }
 });
 
@@ -71,7 +74,7 @@ const getRepoInfo = async function (repoName) {
 
     const fetchLanguages = await fetch(repoInfo.languages_url);
     const languageData = await fetchLanguages.json();
-    
+
     const languages = [];
     for (const language in languageData) {
         languages.push(language);
@@ -82,6 +85,7 @@ const getRepoInfo = async function (repoName) {
 
 // function to display specific repo info
 const displayRepoInfo = function (repoInfo, languages) {
+    backBtn.classList.remove("hide");
     singleRepo.innerHTML = "";
     singleRepo.classList.remove("hide");
     repoSection.classList.add("hide");
@@ -92,6 +96,27 @@ const displayRepoInfo = function (repoInfo, languages) {
     <p>Languages: ${languages.join(", ")}</p>
     <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>
     `;
-    
+
     singleRepo.append(newDiv);
 };
+
+backBtn.addEventListener("click", function () {
+    repoSection.classList.remove("hide");
+    singleRepo.classList.add("hide");
+    backBtn.classList.add("hide");
+});
+
+filterInput.addEventListener("input", function (e) {
+    const searchText = e.target.value;
+    const repos = document.querySelectorAll(".repo");
+    const searchLowerText = searchText.toLowerCase();
+
+    for (const repo of repos) {
+        const repoLowerCase = repo.innerText.toLowerCase();
+        if (repoLowerCase.includes(searchLowerText)) {
+            repo.classList.remove("hide");
+        } else {
+            repo.classList.add("hide");
+        }
+    }
+});
